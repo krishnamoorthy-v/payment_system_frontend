@@ -4,6 +4,12 @@ import type {
   CreateOrderResponse,
   VerifyPaymentRequest,
   VerifyPaymentResponse,
+  SubscriptionPlan,
+  CreateSubscriptionRequest,
+  CreateSubscriptionResponse,
+  VerifySubscriptionRequest,
+  VerifySubscriptionResponse,
+  SubscriptionItem,
 } from '../types/payment';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
@@ -38,6 +44,68 @@ export const apiService = {
     return handleResponse<ApiConfig>(res);
   },
 
+  async getPlans(): Promise<{ plans: SubscriptionPlan[] }> {
+    const res = await fetch(`${API_BASE}/api/plans`);
+    return handleResponse<{ plans: SubscriptionPlan[] }>(res);
+  },
+
+  async createSubscription(payload: CreateSubscriptionRequest): Promise<CreateSubscriptionResponse> {
+    const res = await fetch(`${API_BASE}/api/create-subscription`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+    return handleResponse<CreateSubscriptionResponse>(res);
+  },
+
+  async verifySubscription(payload: VerifySubscriptionRequest): Promise<VerifySubscriptionResponse> {
+    const res = await fetch(`${API_BASE}/api/verify-subscription`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+    return handleResponse<VerifySubscriptionResponse>(res);
+  },
+
+  async getSubscriptions(status?: string): Promise<{ total: number; subscriptions: SubscriptionItem[] }> {
+    const query = status ? `?status=${encodeURIComponent(status)}` : '';
+    const res = await fetch(`${API_BASE}/api/subscriptions${query}`);
+    return handleResponse<{ total: number; subscriptions: SubscriptionItem[] }>(res);
+  },
+
+  async getSubscriptionById(subscriptionId: string): Promise<{
+    subscription: SubscriptionItem;
+    payments: any[];
+    live_razorpay?: any;
+  }> {
+    const res = await fetch(`${API_BASE}/api/subscriptions/${encodeURIComponent(subscriptionId)}`);
+    return handleResponse<{
+      subscription: SubscriptionItem;
+      payments: any[];
+      live_razorpay?: any;
+    }>(res);
+  },
+
+  async cancelSubscription(subscriptionId: string): Promise<{
+    status: string;
+    message: string;
+    subscription_id: string;
+  }> {
+    const res = await fetch(`${API_BASE}/api/subscriptions/${encodeURIComponent(subscriptionId)}/cancel`, {
+      method: 'POST',
+    });
+    return handleResponse<{
+      status: string;
+      message: string;
+      subscription_id: string;
+    }>(res);
+  },
+
+  // Legacy one-time orders
   async createOrder(payload: CreateOrderRequest): Promise<CreateOrderResponse> {
     const res = await fetch(`${API_BASE}/api/create-order`, {
       method: 'POST',

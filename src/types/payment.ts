@@ -3,6 +3,87 @@ export interface ApiConfig {
   currency: string;
 }
 
+export interface CustomerDetails {
+  fullName: string;
+  email: string;
+  phone: string;
+}
+
+export interface SubscriptionPlan {
+  plan_id: string;
+  code: string;
+  name: string;
+  description: string;
+  amount: number; // In INR (₹)
+  amount_paise: number;
+  currency: string;
+  period: 'monthly' | 'yearly';
+  interval: number;
+  features: string[];
+  badge?: string;
+  popular?: boolean;
+  is_active?: boolean;
+}
+
+export interface CreateSubscriptionRequest {
+  plan_id: string;
+  customer: {
+    name: string;
+    email: string;
+    phone: string;
+  };
+  total_count?: number;
+  notes?: Record<string, string>;
+}
+
+export interface CreateSubscriptionResponse {
+  subscription_id: string;
+  plan_id: string;
+  plan_code?: string;
+  plan_name: string;
+  period: 'monthly' | 'yearly';
+  amount: number;
+  currency: string;
+  total_count: number;
+  key_id: string;
+  short_url?: string;
+}
+
+export interface VerifySubscriptionRequest {
+  razorpay_subscription_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}
+
+export interface VerifySubscriptionResponse {
+  status: 'success' | 'failed';
+  message: string;
+  subscription_id: string;
+  payment_id: string;
+}
+
+export interface SubscriptionItem {
+  subscription_id: string;
+  plan_id: string;
+  plan_code?: string;
+  plan_name?: string;
+  period: 'monthly' | 'yearly';
+  amount: number;
+  currency: string;
+  status: 'created' | 'authenticated' | 'active' | 'pending' | 'halted' | 'cancelled' | 'completed' | 'expired';
+  customer?: {
+    name?: string;
+    email?: string;
+    phone?: string;
+  };
+  total_count: number;
+  paid_count: number;
+  payment_id?: string;
+  created_at: string;
+  updated_at?: string;
+  cancelled_at?: string;
+}
+
 export interface CreateOrderRequest {
   amount: number;
   currency?: string;
@@ -14,7 +95,6 @@ export interface CreateOrderRequest {
   };
   notes?: Record<string, string>;
 }
-
 
 export interface CreateOrderResponse {
   order_id: string;
@@ -37,25 +117,10 @@ export interface VerifyPaymentResponse {
   payment_id: string;
 }
 
-export interface CustomerDetails {
-  fullName: string;
-  email: string;
-  phone: string;
-}
-
-export interface PaymentPlan {
-  id: string;
-  name: string;
-  description: string;
-  amount: number; // In INR (₹)
-  badge?: string;
-  features: string[];
-  popular?: boolean;
-}
-
 export interface RazorpaySuccessResponse {
   razorpay_payment_id: string;
-  razorpay_order_id: string;
+  razorpay_order_id?: string;
+  razorpay_subscription_id?: string;
   razorpay_signature: string;
 }
 
@@ -66,19 +131,21 @@ export interface RazorpayErrorResponse {
   step: string;
   reason: string;
   metadata: {
-    order_id: string;
+    order_id?: string;
+    subscription_id?: string;
     payment_id?: string;
   };
 }
 
 export interface RazorpayOptions {
   key: string;
-  amount: number;
-  currency: string;
+  amount?: number;
+  currency?: string;
   name: string;
   description?: string;
   image?: string;
-  order_id: string;
+  order_id?: string;
+  subscription_id?: string;
   handler: (response: RazorpaySuccessResponse) => void;
   prefill?: {
     name?: string;
